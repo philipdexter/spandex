@@ -30,12 +30,18 @@ let spandex file =
       else if !reading && line = "}$$" then begin
         reading := false ;
         close_out (some_or_fail !fout) ;
-        let pipe = Unix.open_process_in (Printf.sprintf "ocaml %s" (some_or_fail !fname)) in
-        try
-          while true do
-            print_endline (input_line pipe)
-          done
-        with End_of_file -> ()
+        let fname = (some_or_fail !fname) in
+        let pipe = Unix.open_process_in (Printf.sprintf "ocamlfind ocamlc -linkpkg -package spandex -o ./_spandex/tmp.byte %s" fname) in
+        (match Unix.close_process_in pipe with
+         | Unix.WEXITED 1 | Unix.WSIGNALED _ | Unix.WSTOPPED _ -> failwith (Printf.sprintf "failed to build %s" fname)
+         | Unix.WEXITED _ -> ()) ;
+        let pipe = Unix.open_process_in "./_spandex/tmp.byte" in
+        (try
+           while true do
+             print_endline (input_line pipe)
+           done
+         with End_of_file -> ()) ;
+        ignore (Unix.close_process_in pipe)
       end
       else if !reading then begin
         Printf.fprintf (some_or_fail !fout) "%s\n" line

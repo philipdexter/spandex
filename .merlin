@@ -1,2 +1,6 @@
 S .
+S spandex
+B _build
+B _build/spandex
+PKG topkg
 PKG cmdliner

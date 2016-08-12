@@ -1,0 +1,5 @@
+description="Wrap your LaTeX in a camel"
+version = "0.1"
+requires = "cmdliner unix"
+archive(byte) = "elastic.cma"
+archive(native) = "elastic.cmxa"

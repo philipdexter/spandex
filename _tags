@@ -1,0 +1,8 @@
+true: annot, bin_annot
+".git": -traverse
+".git": not_hygienic
+
+<spandex>: include
+<spandex/*>: package(unix), package(cmdliner)
+
+<_spandex>: -traverse
