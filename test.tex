@@ -11,21 +11,28 @@
 $${
 open Elastic
 
-let _ = print_all @@ enumerate
+let _ = out_all @@
+  List.map (fun (title, body) ->
+    Printf.sprintf "[R-%s] %s" title body) @@
+  [ "blah", "thing"
+  ; "another", "other thing"
+  ]
+
+let _ = out_all @@ enumerate
  [ "this is a list"
  ; "of items"
  ; "probably"
  ]
 
 let _ =
-  print_endline @@ math "1 + 1"
+  out @@ math "1 + 1"
 
 let _ =
-  print_endline "\\begin{enumerate}" ;
+  out "\\begin{enumerate}" ;
   for i = 1 to 10 do
-    Printf.printf "\\item %d\n" i
+    outf "\\item %d" i
   done ;
-  print_endline "\\end{enumerate}"
+  out "\\end{enumerate}"
 }$$
 
 Hello
