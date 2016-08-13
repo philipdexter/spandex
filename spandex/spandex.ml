@@ -6,7 +6,7 @@
 
    NB: '$${' and '}$$' must be on their own lines
 *)
-let spandex file =
+let spandex file show_spandex =
   let some_or_fail sx =
   match sx with
   | Some x -> x
@@ -31,6 +31,16 @@ let spandex file =
         reading := false ;
         close_out (some_or_fail !fout) ;
         let fname = (some_or_fail !fname) in
+        if show_spandex then begin
+          Printf.printf "%%%% spandex <%s>\n" fname ;
+          let fin = open_in fname in
+          (try while true do
+               Printf.printf "%%%% %s\n" (input_line fin)
+             done
+           with End_of_file -> ()) ;
+          close_in fin ;
+          print_endline "%% end spandex"
+        end ;
         let pipe = Unix.open_process_in (Printf.sprintf "ocamlfind ocamlc -linkpkg -package spandex -o ./_spandex/tmp.byte %s" fname) in
         (match Unix.close_process_in pipe with
          | Unix.WEXITED 1 | Unix.WSIGNALED _ | Unix.WSTOPPED _ -> failwith (Printf.sprintf "failed to build %s" fname)
@@ -56,12 +66,15 @@ open Cmdliner
 let spandex =
   let version = "0.1" in
 
+  let flag_show_spandex =
+    let doc = "Annotate each use of OCaml with comments" in
+    Arg.(value & flag & info ["y" ; "your-spandex-is-showing"] ~doc) in
 
   let file =
     let doc = "sPaNdEx input file" in
     let docv = "FILE" in
     Arg.(required & pos 0 (some string) None & info [] ~doc ~docv) in
-  let term = Term.(const spandex $ file) in
+  let term = Term.(const spandex $ file $ flag_show_spandex) in
 
   let doc = "Wrap a camel in latex. Wait... wrap a latex in a camel?" in
   let man =
