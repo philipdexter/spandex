@@ -6,60 +6,59 @@
 
    NB: '$${' and '}$$' must be on their own lines
 *)
-let spandex file show_spandex =
-  let some_or_fail sx =
-  match sx with
-  | Some x -> x
-  | None -> failwith "some_or_fail got None" in
 
+(* TODO make $!$ into a string thing *)
+
+type state =
+  | Latex
+  | Elastic of out_channel * string
+
+let spandex file show_spandex =
   try Unix.mkdir "_spandex" 0o755
   with Unix.Unix_error (Unix.EEXIST, _, _) -> () ;
 
   let fin = open_in file in
-  let reading = ref false in
-  let fout = ref None in
-  let fname = ref None in
-  try
-    while true do
-      let line = input_line fin in
-      if not !reading && line = "$${" then begin
-        reading := true ;
-        fname := Some (Filename.temp_file ~temp_dir:"./_spandex" "spandex" ".ml") ;
-        fout := Some (open_out (some_or_fail !fname)) ;
-      end
-      else if !reading && line = "}$$" then begin
-        reading := false ;
-        close_out (some_or_fail !fout) ;
-        let fname = (some_or_fail !fname) in
-        if show_spandex then begin
-          Printf.printf "%%%% spandex <%s>\n" fname ;
-          let fin = open_in fname in
-          (try while true do
-               Printf.printf "%%%% %s\n" (input_line fin)
-             done
-           with End_of_file -> ()) ;
-          close_in fin ;
-          print_endline "%% end spandex"
-        end ;
-        let pipe = Unix.open_process_in (Printf.sprintf "ocamlfind ocamlc -linkpkg -package spandex -o ./_spandex/tmp.byte %s" fname) in
-        (match Unix.close_process_in pipe with
-         | Unix.WEXITED 1 | Unix.WSIGNALED _ | Unix.WSTOPPED _ -> failwith (Printf.sprintf "failed to build %s" fname)
-         | Unix.WEXITED _ -> ()) ;
-        let pipe = Unix.open_process_in "./_spandex/tmp.byte" in
-        (try
-           while true do
-             print_endline (input_line pipe)
-           done
-         with End_of_file -> ()) ;
-        ignore (Unix.close_process_in pipe)
-      end
-      else if !reading then begin
-        Printf.fprintf (some_or_fail !fout) "%s\n" line
-      end
-      else
-        print_endline line
-    done
-  with End_of_file -> ()
+  let st = ref Latex in
+  (try
+     while true do
+       let line = input_line fin in
+       match !st with
+       | Latex -> if line = "$${" then begin
+           let fname = Filename.temp_file ~temp_dir:"./_spandex" "spandex" ".ml" in
+           st := Elastic (open_out fname, fname)
+         end else
+           print_endline line
+       | Elastic (fout, fname) -> if line = "}$$" then begin
+           st := Latex ;
+           close_out fout ;
+           let fname = fname in
+           if show_spandex then begin
+             Printf.printf "%%%% spandex <%s>\n" fname ;
+             let fin = open_in fname in
+             (try while true do
+                  Printf.printf "%%%% %s\n" (input_line fin)
+                done
+              with End_of_file -> ()) ;
+             close_in fin ;
+             print_endline "%% end spandex"
+           end ;
+           let pipe = Unix.open_process_in (Printf.sprintf "ocamlfind ocamlc -linkpkg -package spandex -o ./_spandex/tmp.byte %s" fname) in
+           (match Unix.close_process_in pipe with
+            | Unix.WEXITED 1 | Unix.WSIGNALED _ | Unix.WSTOPPED _ -> failwith (Printf.sprintf "failed to build %s" fname)
+            | Unix.WEXITED _ -> ()) ;
+           let pipe = Unix.open_process_in "./_spandex/tmp.byte" in
+           (try
+              while true do
+                print_endline (input_line pipe)
+              done
+            with End_of_file -> ()) ;
+           ignore (Unix.close_process_in pipe)
+         end else
+           Printf.fprintf fout "%s\n" line
+     done
+   with End_of_file -> ()) ;
+  close_in fin
+
 
 open Cmdliner
 
