@@ -66,7 +66,7 @@ let spandex =
   let version = "0.1" in
 
   let flag_show_spandex =
-    let doc = "Annotate each use of OCaml with comments" in
+    let doc = "Annotate, in LaTeX comments, all output of Elastic with the code that created it" in
     Arg.(value & flag & info ["y" ; "your-spandex-is-showing"] ~doc) in
 
   let file =
