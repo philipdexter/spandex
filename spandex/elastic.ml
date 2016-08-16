@@ -1,7 +1,7 @@
 let spf = Printf.sprintf
 
 let enumerate ls =
-  ["\\begin{enumerate}"] @
+  ["\\begin{enumerate}\n"] @
   List.map (fun s -> "\\item " ^ s ^ "\n") ls @
   ["\\end{enumerate}"]
 
