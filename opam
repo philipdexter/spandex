@@ -4,7 +4,7 @@ authors: "Philip Dexter <philip.dexter@gmail.com>"
 homepage: "http://github.com/philipdexter/spandex"
 bug-reports: "http://github.com/philipdexter/spandex/issues"
 dev-repo: "http://github.com/philipdexter/spandex.git"
-available: [ ocaml-version >= "4.03" ]
+available: [ ocaml-version >= "4.02.3" ]
 build: [
   ["ocaml" "pkg/pkg.ml" "build" "--pinned" pinned ]
 ]
