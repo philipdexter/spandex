@@ -8,7 +8,7 @@ let enumerate ls =
 let itemize ls =
   ["\\begin{itemize}\n"] @
   List.map (fun s -> "\\item " ^ s ^ "\n") ls @
-  ["\\end{enumerate}"]
+  ["\\end{itemize}"]
 
 let math = spf "\\( %s \\)"
 
