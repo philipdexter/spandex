@@ -17,7 +17,7 @@ let spandex file show_spandex =
   try Unix.mkdir "_spandex" 0o755
   with Unix.Unix_error (Unix.EEXIST, _, _) -> () ;
 
-  let fin = open_in file in
+  let fin = if file = "-" then stdin else open_in file in
   let st = ref Latex in
   (try
      while true do
