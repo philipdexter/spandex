@@ -5,6 +5,11 @@ let enumerate ls =
   List.map (fun s -> "\\item " ^ s ^ "\n") ls @
   ["\\end{enumerate}"]
 
+let itemize ls =
+  ["\\begin{itemize}\n"] @
+  List.map (fun s -> "\\item " ^ s ^ "\n") ls @
+  ["\\end{enumerate}"]
+
 let math = spf "\\( %s \\)"
 
 let out = print_endline
